@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Markdown文本清理工具</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: #fff;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #2d2d2d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #444;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+        p {
+            font-size: 16px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI文本清理工具</h1>
+    <p>将AI回答的文本粘贴到下面的输入框中：</p>
+    <textarea id="input" placeholder="在此粘贴Markdown文本..."></textarea>
+    <button onclick="cleanMarkdown()">清理格式</button>
+    <button onclick="shareAsImage()">分享截图</button>
+    
+    <p>清理后的文本：</p>
+    <textarea id="output" readonly></textarea>
+
+    <button onclick="copyToClipboard()">复制文本</button>
+   
+    <script>
+        function cleanMarkdown() {
+            let text = document.getElementById('input').value;
+            
+            // 移除Markdown语法
+            text = text
+                .replace(/#{1,6}\s/g, '') // 移除标题
+                .replace(/\*\*(.*?)\*\*/g, '$1') // 移除加粗
+                .replace(/\*(.*?)\*/g, '$1') // 移除斜体
+                .replace(/`{3}[\s\S]*?`{3}/g, '') // 移除代码块
+                .replace(/`(.*?)`/g, '$1') // 移除行内代码
+                .replace(/\[(.*?)\]\(.*?\)/g, '$1') // 移除链接，保留链接文本
+                .replace(/!\[.*?\]\(.*?\)/g, '') // 移除图片
+                .replace(/^\s*[-+*]\s/gm, '') // 移除无序列表符号
+                .replace(/^\s*\d+\.\s/gm, '') // 移除有序列表符号
+                .replace(/^\s*>/g, '') // 移除引用符号
+                .replace(/\n{3,}/g, '\n\n'); // 将多个空行替换为两个空行
+
+            // 移除多余的空行
+            text = text.replace(/^\s*$\n/gm, '');
+            //移除多余的---
+            text = text.replace(/---/g, '');
+
+            document.getElementById('output').value = text.trim();
+        }
+
+        function copyToClipboard() {
+            const output = document.getElementById('output');
+            output.select();
+            document.execCommand('copy');
+            alert('文本已复制到剪贴板');
+        }
+
+        function shareAsImage() {
+            let text = document.getElementById('input').value;
+            
+            // 移除Markdown语法
+            text = text
+                .replace(/#{1,6}\s/g, '') // 移除标题
+                .replace(/\*\*(.*?)\*\*/g, '$1') // 移除加粗
+                .replace(/\*(.*?)\*/g, '$1') // 移除斜体
+                .replace(/`{3}[\s\S]*?`{3}/g, '') // 移除代码块
+                .replace(/`(.*?)`/g, '$1') // 移除行内代码
+                .replace(/\[(.*?)\]\(.*?\)/g, '$1') // 移除链接，保留链接文本
+                .replace(/!\[.*?\]\(.*?\)/g, '') // 移除图片
+                .replace(/^\s*[-+*]\s/gm, '') // 移除无序列表符号
+                .replace(/^\s*\d+\.\s/gm, '') // 移除有序列表符号
+                .replace(/^\s*>/g, '') // 移除引用符号
+                .replace(/\n{3,}/g, '\n\n'); // 将多个空行替换为两个空行
+
+            // 移除多余的空行
+            text = text.replace(/^\s*$\n/gm, '');
+            //移除多余的---
+            text = text.replace(/---/g, '');
+
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            const lineHeight = 25;
+            const padding = 10;
+            const lines = text.split('\n');
+            const maxWidth = Math.max(...lines.map(line => context.measureText(line).width));
+
+            canvas.width = maxWidth + padding * 2;
+            canvas.height = lines.length * lineHeight + padding * 2;
+
+            context.fillStyle = '#fff';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.fillStyle = '#000';
+            context.font = '16px Arial';
+
+            lines.forEach((line, index) => {
+                context.fillText(line, padding, padding + (index + 1) * lineHeight);
+            });
+
+            const image = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = image;
+            link.download = 'cleaned_text.png';
+            link.click();
+        }
+    </script>
+</body>
+</html>

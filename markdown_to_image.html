@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Markdown文本展示工具</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.1/styles/default.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        #preview {
+            border: 2px solid #ccc;
+            padding: 20px;
+            background: white;
+            width: 100%;
+            min-height: 300px;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        #fontSize, #deviceSize, #borderColor {
+            width: 150px;
+        }
+        textarea {
+            width: 100%;
+            height: 400px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: #fff;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #2d2d2d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #444;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+        p {
+            font-size: 16px;
+            color: #666;
+        }
+        .container {
+            display: flex;
+            flex-wrap: nowrap;
+        }
+        .controls, textarea, #preview {
+            box-sizing: border-box;
+        }
+        .controls, textarea {
+            flex: 1 1 50%;
+        }
+        #preview {
+            flex: 1 1 50%;
+            margin-left: 20px;
+        }
+        .buttons {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Markdown文本展示工具</h1>
+    <div class="container">
+        <div class="controls">
+            <label>字体大小: <input type="range" id="fontSize" min="12" max="24" value="16"></label>
+            <span id="fontSizeValue">16px</span>
+            <br>
+            <label>设备尺寸: 
+                <select id="deviceSize">
+                    <option value="430x932">iPhone 16</option>
+                    <option value="768x1024">iPad</option>
+                </select>
+            </label>
+            <br>
+            <label>边框颜色: <input type="color" id="borderColor" value="#cccccc"></label>
+            <br>
+            <textarea id="input"></textarea>
+            <div class="buttons">
+                <button onclick="renderMarkdown()">预览</button>
+                <button onclick="saveAsImage()">保存为图片</button>
+            </div>
+        </div>
+        <div id="preview"></div>
+    </div>
+
+    <script>
+        marked.setOptions({
+            highlight: function(code, lang) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
+            }
+        });
+
+        function adjustPreviewSize() {
+            const preview = document.getElementById('preview');
+            const deviceSize = document.getElementById('deviceSize').value.split('x');
+            const aspectRatio = deviceSize[0] / deviceSize[1];
+            const newWidth = preview.clientWidth;
+            const newHeight = newWidth / aspectRatio;
+            preview.style.minHeight = newHeight + 'px';
+        }
+
+        window.addEventListener('resize', adjustPreviewSize);
+
+        function renderMarkdown() {
+            const input = document.getElementById('input').value;
+            const preview = document.getElementById('preview');
+            preview.innerHTML = marked.parse(input);
+            
+            const fontSize = document.getElementById('fontSize').value;
+            preview.style.fontSize = fontSize + 'px';
+            
+            const borderColor = document.getElementById('borderColor').value;
+            preview.style.borderColor = borderColor;
+
+            const deviceSize = document.getElementById('deviceSize').value.split('x');
+            preview.style.width = deviceSize[0] + 'px';
+            preview.style.minHeight = deviceSize[1] + 'px';
+
+            adjustPreviewSize();
+        }
+
+        function saveAsImage() {
+            html2canvas(document.getElementById('preview')).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'markdown.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        document.getElementById('fontSize').addEventListener('input', function(e) {
+            document.getElementById('fontSizeValue').textContent = e.target.value + 'px';
+            renderMarkdown();
+        });
+
+        document.getElementById('borderColor').addEventListener('input', renderMarkdown);
+        document.getElementById('deviceSize').addEventListener('change', renderMarkdown);
+    </script>
+</body>
+</html>
